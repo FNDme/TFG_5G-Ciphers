@@ -1,0 +1,7 @@
+{
+  "files.associations": {
+    "random": "cpp",
+    "x86intrin.h": "c",
+    "chrono": "cpp"
+  }
+}
