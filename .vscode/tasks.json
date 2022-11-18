@@ -2,19 +2,22 @@
   "tasks": [
     {
       "type": "cppbuild",
-      "label": "C/C++: g++.exe compilar archivo activo",
-      "command": "C:\\MinGW\\bin\\g++.exe",
+      "label": "C/C++: gcc compilar archivo activo",
+      "command": "/usr/bin/gcc",
       "args": [
         "-fdiagnostics-color=always",
         "-g",
-        "-march=native",
         "${file}",
         "-o",
-        "${fileDirname}\\${fileBasenameNoExtension}.exe"
+        "${fileDirname}/${fileBasenameNoExtension}",
+        "-march=native"
       ],
       "options": {
         "cwd": "${fileDirname}"
       },
+      "problemMatcher": [
+        "$gcc"
+      ],
       "group": {
         "kind": "build",
         "isDefault": true
