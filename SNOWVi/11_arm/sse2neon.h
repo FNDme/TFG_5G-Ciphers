@@ -5778,8 +5778,7 @@ FORCE_INLINE __m128i _mm_sra_epi32(__m128i a, __m128i count)
 // https://software.intel.com/sites/landingpage/IntrinsicsGuide/#text=_mm_srai_epi16
 FORCE_INLINE __m128i _mm_srai_epi16(__m128i a, int imm)
 {
-    const int count = (imm & ~15) ? 15 : imm;
-    return (__m128i) vshlq_s16((int16x8_t) a, vdupq_n_s16(-count));
+    return (__m128i) vshlq_s16((int16x8_t) a, vdupq_n_s16(-((imm & ~15) ? 15 : imm)));
 }
 
 // Shift packed 32-bit integers in a right by imm8 while shifting in sign bits,
@@ -6834,7 +6833,7 @@ FORCE_INLINE __m64 _mm_abs_pi8(__m64 a)
             ret = _mm_srli_si128(a, imm >= 16 ? imm - 16 : 0);                \
         else                                                                  \
             ret =                                                             \
-                vreinterpretq_m128i_u8(vextq_u8(_b, _a, imm < 16 ? imm : 0)); \
+                vreinterpretq_m128i_u8(vextq_u8(vreinterpretq_u8_m128i(b), vreinterpretq_u8_m128i(a), imm < 16 ? imm : 0)); \
         ret;                                                                  \
     })
 

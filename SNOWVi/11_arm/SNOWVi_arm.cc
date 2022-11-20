@@ -1,20 +1,28 @@
 #include "sse2neon.h"
-#define XOR(a, b)     _mm_xor_si128(a, b)
-#define AND(a, b)     _mm_and_si128(a, b)
-#define ADD(a, b)     _mm_add_epi32(a, b)
-#define SET(v)        _mm_set1_epi16((short)v)
-#define SLL(a)        _mm_slli_epi16(a, 1)
-#define SRA(a)        _mm_srai_epi16(a, 15)
-#define TAP7(Hi, Lo)  _mm_alignr_epi8(Hi, Lo, 7 * 2)
+// DONE
+#define XOR(a, b)     \
+  vreinterpretq_s64_s32(veorq_s32(vreinterpretq_s32_s64(a), vreinterpretq_s32_s64(b)))
+#define AND(a, b)     \
+  vreinterpretq_s64_s32(vandq_s32(vreinterpretq_s32_s64(a), vreinterpretq_s32_s64(b)))
+#define ADD(a, b)     \
+  vreinterpretq_s64_s32(vaddq_s32(vreinterpretq_s32_s64(a), vreinterpretq_s32_s64(b)))
+#define SET(v)        vreinterpretq_s64_s16(vdupq_n_s16(v))
+#define SLL(a)        \
+  vreinterpretq_s64_s16(vshlq_s16(vreinterpretq_s16_s64(a), vdupq_n_s16(1)))
+#define SRA(a)        (int64x2_t) vshlq_s16((int16x8_t) a, vdupq_n_s16(-15))
+#define TAP7(Hi, Lo)  vreinterpretq_s64_u8(vextq_u8(vreinterpretq_u8_s64(Lo), vreinterpretq_u8_s64(Hi), 14))
 #define SIGMA(a)      \
-  _mm_shuffle_epi8(a, _mm_set_epi64x(\
-  0x0f0b07030e0a0602ULL, 0x0d0905010c080400ULL));
-#define AESR(a, k)    _mm_aesenc_si128(a, k)
-#define ZERO()        _mm_setzero_si128()
+  vreinterpretq_s64_s8(vqtbl1q_s8(vreinterpretq_s8_s64(a), vandq_u8(vreinterpretq_u8_s64(vcombine_s64(vcreate_s64(0x0d0905010c080400ULL), vcreate_s64(0x0f0b07030e0a0602ULL))), vdupq_n_u8(0x8F))));
+// TODO
+#define AESR(a, k)    vreinterpretq_m128i_u8(\
+        vaesmcq_u8(vaeseq_u8(vreinterpretq_u8_m128i(a), vdupq_n_u8(0))) ^\
+        vreinterpretq_u8_m128i(k))
+// DONE
+#define ZERO()        vreinterpretq_s64_s32(vdupq_n_s32(0))
 #define LOAD(src)     \
-  _mm_loadu_si128((const __m128i*)(src))
+  vreinterpretq_s64_s32(vld1q_s32((const int32_t *)(src)))
 #define STORE(dst, x) \
-  _mm_storeu_si128((__m128i*)(dst), x)
+  vst1q_s32((int32_t *) (dst), vreinterpretq_s32_s64(x))
 #define u8            unsigned char
 
 #define SnowVi_XMM_ROUND(mode, offset)\
@@ -34,7 +42,7 @@ R1 = SIGMA(T2);
 
 inline void SnowVi_encdec(int length, u8 * out,
   u8 * in, u8 * key, u8 * iv)
-{ __m128i A0, A1, B0, B1, R1, R2, R3, T1, T2;
+{ int64x2_t A0, A1, B0, B1, R1, R2, R3, T1, T2;
   B0 = R1 = R2 = ZERO();
   A0 = LOAD(iv);
   R3 = A1 = LOAD(key);
