@@ -8,8 +8,8 @@ endif
 
 default: check_compiler compile check_output
 
-compile: SNOWVi_x86.cc
-	$(CC) SNOWVi_x86.cc $(CFLAGS) -o main
+compile: SNOWVi_x86.c
+	$(CC) SNOWVi_x86.c $(CFLAGS) -o main
 
 check_compiler:
 	@which $(CC) > /dev/null || (echo "ERROR: $(CC) is not installed" && exit 1)

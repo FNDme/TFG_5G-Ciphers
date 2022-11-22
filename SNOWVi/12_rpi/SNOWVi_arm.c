@@ -1,12 +1,9 @@
 // TODO: Reformatear estas instrucciones para aumentar la eficiencia
-#include <arm_neon.h>
-// DONE
+#include "sse2neon.h"
 #define XOR(a, b)     veorq_s64(a, b)
-// DONE
 #define AND(a, b)     vandq_s64(a, b)
 // TODO
-#define ADD(a, b)     \
-  vreinterpretq_s64_s32(vaddq_s32(vreinterpretq_s32_s64(a), vreinterpretq_s32_s64(b)))
+#define ADD(a, b)     vaddq_s64(a, b)
 // TODO
 #define SET(v)        vreinterpretq_s64_s16(vdupq_n_s16(v))
 // TODO
@@ -16,17 +13,16 @@
 #define SRA(a)        \
   vreinterpretq_s64_s16(vshrq_n_s16(vreinterpretq_s16_s64(a), 15))
 // TODO
-#define TAP7(Hi, Lo)  vreinterpretq_s64_u8(vextq_u8(vreinterpretq_u8_s64(Lo), vreinterpretq_u8_s64(Hi), 14))
+#define TAP7(Hi, Lo)  vreinterpretq_s64_u8(vextq_u8(vreinterpretq_u8_s64(Lo),\
+  vreinterpretq_u8_s64(Hi), 14))
 // TODO
 #define SIGMA(a)      \
-  vreinterpretq_s64_s8(vqtbl1q_s8(vreinterpretq_s8_s64(a), vandq_u8(vreinterpretq_u8_s64(vcombine_s64(vcreate_s64(0x0d0905010c080400ULL), vcreate_s64(0x0f0b07030e0a0602ULL))), vdupq_n_u8(0x8F))));
-// TODO: Traducir y formatear
-#define AESR(a, k)    vreinterpretq_s64_u8(vaesmcq_u8(vaeseq_u8(vreinterpretq_u8_s64(a), vdupq_n_u8(0))) ^ vreinterpretq_u8_s64(k))
-// DONE
+  vreinterpretq_s64_s8(vqtbl1q_s8(vreinterpretq_s8_s64(a),\
+  vandq_u8(vreinterpretq_u8_s64(vcombine_s64(vcreate_s64(0x0d0905010c080400ULL),\
+  vcreate_s64(0x0f0b07030e0a0602ULL))), vdupq_n_u8(0x8F))));
+#define AESR(a, k)    _mm_aesenc_si128(a, k)
 #define ZERO()        vdupq_n_s64(0)
-// DONE
 #define LOAD(src)     vld1q_s64((const int64_t *)(src))
-// DONE
 #define STORE(dst, x) vst1q_s64((int64_t *) (dst), x)
 #define u8            unsigned char
 
@@ -83,12 +79,13 @@ int main()
     0x1c, 0x8a, 0xb2, 0x02, 0xee, 0x38, 0xe2, 0x85, 0x0c, 0xca, 0x60, 0x6a, 0xb8, 0x75, 0xcd, 0x12,
     0x41, 0x03, 0xb3, 0x2f, 0xa5, 0x14, 0x5d, 0xdf, 0x54, 0xe7, 0xa0, 0x7b, 0x0f, 0x3e, 0xb7, 0x7a
   };
+  bool ok = true;
   for (int i = 0; i < 128; ++i)
     if (out[i] != test[i])
     {
       printf("Error at %d: %02x != %02x\n", i, out[i], test[i]);
-      return 1;
+      ok = false;
     }
-  printf("Everything is OK\n");
+  if (ok) printf("OK\n");
   return 0;
 }
