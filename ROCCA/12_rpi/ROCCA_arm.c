@@ -1,5 +1,6 @@
 #include <stdint.h>
 #include <arm_neon.h>
+#include "sse2neon.h"
 
 typedef struct Context {
   int64x2_t state[8]; // state
@@ -24,7 +25,7 @@ typedef struct Context {
 #define Z1_1      0xe9b5dba5
 #define Z1_0      0x8189dbbc
 
-#define enc(m, k) vreinterpretq_s64_u8(vaesmcq_u8(vaeseq_u8(vreinterpretq_u8_s64(m), vdupq_n_u8(0))) ^ vreinterpretq_u8_s64(k))
+#define enc(m, k) _mm_aesenc_si128(m, k)
 #define xor(a, b) veorq_s64(a, b)
 
 #define UPDATE_STATE(X) \

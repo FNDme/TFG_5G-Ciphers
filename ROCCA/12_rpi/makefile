@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS=-march=armv8-a+crc+crypto
+CFLAGS=-march=native
 ifeq ($(OS),Windows_NT)
 	DIFF = fc
 else
@@ -14,7 +14,7 @@ compile: ROCCA_arm.c
 test: compile
 	./main
 	rm -rf *.o *.exe *.out main
-
+	
 .PHONY: clean
 clean:
 	rm -rf *.o *.exe *.out main
