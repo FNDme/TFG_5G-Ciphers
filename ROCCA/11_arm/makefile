@@ -1,5 +1,6 @@
 CC=gcc
-CFLAGS=-march=armv8-a+crc+crypto
+CFLAGS=-march=native
+
 ifeq ($(OS),Windows_NT)
 	DIFF = fc
 else
