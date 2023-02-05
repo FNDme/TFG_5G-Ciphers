@@ -1,9 +1,9 @@
-#include <wmmintrin.h>
+#include <x86intrin.h>
 
 // TODO: Arreglar fallo en linea 39
 
 // AES-256 Key Expansion
-void KEY_256_ASSIST_1(__m128i* temp1, __m128i * temp2)
+inline void KEY_256_ASSIST_1(__m128i* temp1, __m128i * temp2)
 {
   __m128i temp4;
   *temp2 = _mm_shuffle_epi32(*temp2, 0xff);
@@ -16,7 +16,7 @@ void KEY_256_ASSIST_1(__m128i* temp1, __m128i * temp2)
   *temp1 = _mm_xor_si128 (*temp1, *temp2);
 }
 
-void KEY_256_ASSIST_2(__m128i* temp1, __m128i * temp3)
+inline void KEY_256_ASSIST_2(__m128i* temp1, __m128i * temp3)
 {
   __m128i temp2,temp4;
   temp4 = _mm_aeskeygenassist_si128 (*temp1, 0x0);
@@ -31,7 +31,7 @@ void KEY_256_ASSIST_2(__m128i* temp1, __m128i * temp3)
 }
 
 void AES_256_Key_Expansion (const unsigned char *userkey,
-  unsigned char *key)
+                            unsigned char *key)
 {
   __m128i temp1, temp2, temp3;
   __m128i *Key_Schedule = (__m128i*)key;
@@ -132,26 +132,31 @@ void AES_CBC_decrypt( const unsigned char *in,
   }
 
 #include <stdio.h>
-int main() {
+int main()
+{
   unsigned char key[32];
   unsigned char in[16];
   unsigned char out[16];
   unsigned char ivec[16];
   int i;
 
-  for (i=0; i<16; i++) {
-    in[i] = i;
-    ivec[i] = i;
+  for(i=0; i < 16; i++){
+    in[i]=i;
+    ivec[i]=i;
   }
 
-  AES_256_Key_Expansion(in, key);
+  AES_256_Key_Expansion(in,key);
 
-  AES_CBC_encrypt(in, out, ivec, 16, key, 14);
-  for (i=0; i<16; i++) printf("%02x", out[i]);
+  AES_CBC_encrypt(in,out,ivec,16,key,14);
+
+  for(i=0; i < 16; i++)
+    printf("%02x",out[i]);
   printf("\n");
 
-  AES_CBC_decrypt(out, in, ivec, 16, key, 14);
-  for (i=0; i<16; i++) printf("%02x", in[i]);
+  AES_CBC_decrypt(out,in,ivec,16,key,14);
+
+  for(i=0; i < 16; i++)
+    printf("%02x",in[i]);
   printf("\n");
 
   return 0;
