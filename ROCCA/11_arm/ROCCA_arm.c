@@ -51,11 +51,14 @@ typedef struct Context {
   vst1q_s64((int64_t*)((dst)), (src[0])); \
   vst1q_s64((int64_t*)((dst)+16), (src[1]));
 
-#define CAST_U64_TO_M128(v) \
-  vreinterpretq_s64_s32(vld1q_s32((const int32_t[4]){ \
-    (int32_t)(((uint64_t)(v)) & 0xFFFFFFFF), \
-    (int32_t)(((uint64_t)(v)) >> 32 & 0xFFFFFFFF), \
-    0, 0}));
+#define CAST_U64_TO_M128(v) ({ \
+  int64_t temp[4] = { \
+    (((int64_t)(v)) & 0xFFFFFFFF), \
+    (((int64_t)(v)) >> 32 & 0xFFFFFFFF), \
+    0, 0 \
+  }; \
+  vld1q_s64(temp); \
+})
 
 void stream_init(context * ctx, const uint8_t * key, \
 const uint8_t * nonce) {
@@ -64,8 +67,8 @@ const uint8_t * nonce) {
   // Initialize internal state
   S[0] = vld1q_s64((const int64_t*)(key+16));
   S[1] = vld1q_s64((const int64_t*)(nonce ));
-  S[2] = vreinterpretq_s64_s32(vld1q_s32((const int32_t[4]){Z0_0, Z0_1, Z0_2, Z0_3}));
-  S[3] = vreinterpretq_s64_s32(vld1q_s32((const int32_t[4]){Z1_0, Z1_1, Z1_2, Z1_3}));
+  S[2] = vld1q_s64((const int64_t[4]){Z0_0, Z0_1, Z0_2, Z0_3});
+  S[3] = vld1q_s64((const int64_t[4]){Z1_0, Z1_1, Z1_2, Z1_3});
   S[4] = veorq_s64((S[1]), (S[0]));
   S[5] = vdupq_n_s64(0);
   S[6] = vld1q_s64((const int64_t*)(key   ));
