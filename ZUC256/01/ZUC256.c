@@ -98,17 +98,26 @@ u32 AddM(u32 a, u32 b)
 void LFSRWithInitialisationMode(u32 u)
 {
   u32 f, v;
+
   f = LFSR_S0;
   v = MulByPow2(LFSR_S0, 8);
   f = AddM(f, v);
+
   v = MulByPow2(LFSR_S4, 20);
   f = AddM(f, v);
+
   v = MulByPow2(LFSR_S10, 21);
   f = AddM(f, v);
+
   v = MulByPow2(LFSR_S13, 17);
   f = AddM(f, v);
+
   v = MulByPow2(LFSR_S15, 15);
   f = AddM(f, v);
+
+  if (f == 0)
+    f = 0x7FFFFFFF;
+
   f = AddM(f, u);
   /* update the state */
   LFSR_S0 = LFSR_S1;
@@ -127,23 +136,32 @@ void LFSRWithInitialisationMode(u32 u)
   LFSR_S13 = LFSR_S14;
   LFSR_S14 = LFSR_S15;
   LFSR_S15 = f;
+
+  if (LFSR_S15 == 0)
+    LFSR_S15 = 0x7FFFFFFF;
 }
 
 /* LFSR with work mode */
 void LFSRWithWorkMode()
 {
   u32 f, v;
+
   f = LFSR_S0;
   v = MulByPow2(LFSR_S0, 8);
   f = AddM(f, v);
+
   v = MulByPow2(LFSR_S4, 20);
   f = AddM(f, v);
+
   v = MulByPow2(LFSR_S10, 21);
   f = AddM(f, v);
+
   v = MulByPow2(LFSR_S13, 17);
   f = AddM(f, v);
+
   v = MulByPow2(LFSR_S15, 15);
   f = AddM(f, v);
+
   /* update the state */
   LFSR_S0 = LFSR_S1;
   LFSR_S1 = LFSR_S2;
@@ -161,6 +179,9 @@ void LFSRWithWorkMode()
   LFSR_S13 = LFSR_S14;
   LFSR_S14 = LFSR_S15;
   LFSR_S15 = f;
+
+  if (LFSR_S15 == 0)
+    LFSR_S15 = 0x7FFFFFFF;
 }
 
 /* BitReorganization */
@@ -204,7 +225,8 @@ u32 F()
   return W;
 }
 
-#define CONCAT(a, b, c, d)  (((u32)(a) << 24) | ((u32)(b) << 16) | ((u32)(c) << 8) | ((u32)(d)))
+#define CONCAT(a, b, c, d) (((((((0x00 | a) << 7) | b) << 8) |  c) << 8) |  d);
+
 /* initialize */
 void Initialization(u8 *k, u8 *iv)
 {
@@ -239,16 +261,14 @@ void Initialization(u8 *k, u8 *iv)
     LFSRWithInitialisationMode(w >> 1);
     nCount--;
   }
+  BitReorganization();
+  F(); /* discard the output of F */
+  LFSRWithWorkMode();
 }
 
 void GenerateKeystream(u32 *pKeystream, int KeystreamLen)
 {
   int i;
-  {
-    BitReorganization();
-    F(); /* discard the output of F */
-    LFSRWithWorkMode();
-  }
   for (i = 0; i < KeystreamLen; i++)
   {
     BitReorganization();
@@ -259,10 +279,16 @@ void GenerateKeystream(u32 *pKeystream, int KeystreamLen)
 
 /* test */
 #include <stdio.h>
-int main()
+int test()
 {
-  u8 k[32] = {0};
-  u8 iv[24] = {0};
+  u8 k[32];
+  for (int i = 0; i < 32; i++)
+    k[i] = 0xff;
+  u8 iv[24];
+  for (int i = 0; i < 16; i++)
+    iv[i] = 0xff;
+  for (int i = 16; i < 24; i++)
+    iv[i] = 0x3f;
   u32 keystream[20];
 
   Initialization(k, iv);
@@ -271,8 +297,13 @@ int main()
   for (int i = 0; i < 20; i++)
   {
     printf("%08x ", keystream[i]);
-    if (i % 4 == 3)
+    if (i % 5 == 4)
       printf("\n");
   }
   return 0;
+}
+
+int main()
+{
+  return test();
 }
