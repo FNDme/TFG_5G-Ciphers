@@ -19,12 +19,6 @@
   - [x] 11_arm
   - [x] 12_rpi
 - [x] Zuc-256
-- [ ] Test
-  - [ ] AES-256
-  - [ ] ROCCA
-  - [ ] SnowV
-  - [ ] SnowVi
-  - [ ] Zuc-256
 - [ ] Benchmark
   - [ ] AES-256
   - [ ] ROCCA
@@ -32,3 +26,5 @@
   - [ ] SnowVi
   - [ ] Zuc-256
 - [ ] Compare performance
+- [ ] Write the paper
+- [ ] Start the first version of the final degree project
