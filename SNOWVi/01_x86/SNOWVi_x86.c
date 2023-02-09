@@ -32,7 +32,7 @@ R3 = AESR(R2, A1);\
 R2 = AESR(R1, ZERO());\
 R1 = SIGMA(T2);
 
-inline void SnowVi_encdec(int length, u8 * out,
+static inline void SnowVi_encdec(int length, u8 * out,
   u8 * in, u8 * key, u8 * iv)
 { __m128i A0, A1, B0, B1, R1, R2, R3, T1, T2;
   B0 = R1 = R2 = ZERO();

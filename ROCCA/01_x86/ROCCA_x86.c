@@ -24,28 +24,28 @@ typedef struct Context {
 #define Z1_1      0xe9b5dba5
 #define Z1_0      0x8189dbbc
 
-#define enc(m, k) _mm_aesenc_si128(m, k)
-#define xor(a, b) _mm_xor_si128(a, b)
+#define ENC(m, k) _mm_aesenc_si128(m, k)
+#define XOR(a, b) _mm_xor_si128(a, b)
 
 #define UPDATE_STATE(X) \
   tmp7  =    S[7]; \
   tmp6  =    S[6]; \
-  S[7] = xor(S[6], S[0]); \
-  S[6] = enc(S[5], S[4]); \
-  S[5] = enc(S[4], S[3]); \
-  S[4] = xor(S[3], X[1]); \
-  S[3] = enc(S[2], S[1]); \
-  S[2] = xor(S[1], tmp6); \
-  S[1] = enc(S[0], tmp7); \
-  S[0] = xor(tmp7, X[0]);
+  S[7] = XOR(S[6], S[0]); \
+  S[6] = ENC(S[5], S[4]); \
+  S[5] = ENC(S[4], S[3]); \
+  S[4] = XOR(S[3], X[1]); \
+  S[3] = ENC(S[2], S[1]); \
+  S[2] = XOR(S[1], tmp6); \
+  S[1] = ENC(S[0], tmp7); \
+  S[0] = XOR(tmp7, X[0]);
 
 #define LOAD(src, dst) \
   dst[0] = _mm_loadu_si128((const __m128i*)((src)   )); \
   dst[1] = _mm_loadu_si128((const __m128i*)((src)+16));
 
 #define XOR_STRM(src, dst) \
-  dst[0] = xor(src[0], enc(S[1]          , S[5])); \
-  dst[1] = xor(src[1], enc(xor(S[0],S[4]), S[2]));
+  dst[0] = XOR(src[0], ENC(S[1]          , S[5])); \
+  dst[1] = XOR(src[1], ENC(XOR(S[0],S[4]), S[2]));
 
 #define STORE(src, dst) \
   _mm_storeu_si128((__m128i*)((dst)   ), src[0]); \
@@ -244,6 +244,6 @@ int main() {
       return 1;
     }
   }
-  printf("\nEverything is correct");
+  printf("\nEverything is correct\n");
   return 0;
 }

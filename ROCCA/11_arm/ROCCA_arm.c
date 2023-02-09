@@ -24,28 +24,28 @@ typedef struct Context {
 #define Z1_1      0xe9b5dba5
 #define Z1_0      0x8189dbbc
 
-#define enc(m, k) vreinterpretq_s64_u8(vaesmcq_u8(vaeseq_u8(vreinterpretq_u8_s64(m), vdupq_n_u8(0))) ^ vreinterpretq_u8_s64(k))
-#define xor(a, b) veorq_s64(a, b)
+#define ENC(m, k) vreinterpretq_s64_u8(vaesmcq_u8(vaeseq_u8(vreinterpretq_u8_s64(m), vdupq_n_u8(0))) ^ vreinterpretq_u8_s64(k))
+#define XOR(a, b) veorq_s64(a, b)
 
 #define UPDATE_STATE(X) \
   tmp7  =    S[7]; \
   tmp6  =    S[6]; \
-  S[7] = xor(S[6], S[0]); \
-  S[6] = enc(S[5], S[4]); \
-  S[5] = enc(S[4], S[3]); \
-  S[4] = xor(S[3], X[1]); \
-  S[3] = enc(S[2], S[1]); \
-  S[2] = xor(S[1], tmp6); \
-  S[1] = enc(S[0], tmp7); \
-  S[0] = xor(tmp7, X[0]);
+  S[7] = XOR(S[6], S[0]); \
+  S[6] = ENC(S[5], S[4]); \
+  S[5] = ENC(S[4], S[3]); \
+  S[4] = XOR(S[3], X[1]); \
+  S[3] = ENC(S[2], S[1]); \
+  S[2] = XOR(S[1], tmp6); \
+  S[1] = ENC(S[0], tmp7); \
+  S[0] = XOR(tmp7, X[0]);
 
 #define LOAD(src, dst) \
   dst[0] = vld1q_s64((const int64_t*)((src)   )); \
   dst[1] = vld1q_s64((const int64_t*)((src)+16));
 
 #define XOR_STRM(src, dst) \
-  dst[0] = xor(src[0], enc(S[1]          , S[5])); \
-  dst[1] = xor(src[1], enc(xor(S[0],S[4]), S[2]));
+  dst[0] = XOR(src[0], ENC(S[1]          , S[5])); \
+  dst[1] = XOR(src[1], ENC(XOR(S[0],S[4]), S[2]));
 
 #define STORE(src, dst) \
   vst1q_s64((int64_t*)((dst)), (src[0])); \
