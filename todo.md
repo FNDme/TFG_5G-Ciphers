@@ -3,7 +3,7 @@
 - [ ] Make a good README.md
 - [ ] Make a good USAGE.md
 - [ ] AES-256
-  - [ ] 01_x86
+  - [x] 01_x86
   - [ ] 11_arm
   - [ ] 12_rpi
 - [x] ROCCA
