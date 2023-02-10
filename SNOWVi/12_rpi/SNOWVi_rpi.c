@@ -1,29 +1,22 @@
-// TODO: Reformatear estas instrucciones para aumentar la eficiencia
 #include "sse2neon.h"
 #define XOR(a, b)     veorq_s64(a, b)
 #define AND(a, b)     vandq_s64(a, b)
-// TODO
-#define ADD(a, b)     vaddq_s64(a, b)
-// TODO
-#define SET(v)        vreinterpretq_s64_s16(vdupq_n_s16(v))
-// TODO
-#define SLL(a)        \
-  vreinterpretq_s64_s16(vshlq_n_s16(vreinterpretq_s16_s64(a), 1))
-// TODO
-#define SRA(a)        \
-  vreinterpretq_s64_s16(vshrq_n_s16(vreinterpretq_s16_s64(a), 15))
-// TODO
-#define TAP7(Hi, Lo)  vreinterpretq_s64_u8(vextq_u8(vreinterpretq_u8_s64(Lo),\
-  vreinterpretq_u8_s64(Hi), 14))
-// TODO
+#define ADD(a, b)     vreinterpretq_s64_s32(vaddq_s32(vreinterpretq_s32_s64(a), vreinterpretq_s32_s64(b)))
+#define SET(v)        vreinterpretq_s64_s16(vdupq_n_s16((short)v))
+// Unable to transform without remove functionalities
+// --------------------------------------------------
+#define SLL(a)        vreinterpretq_s64_s16(vshlq_s16(vreinterpretq_s16_s64(a), vdupq_n_s16(1)))
+#define SRA(a)        vreinterpretq_s64_s16(vshlq_s16((int16x8_t) a, vdupq_n_s16(-15)))
+#define TAP7(Hi, Lo)  vreinterpretq_m128i_u8(vextq_u8(vreinterpretq_u8_s64(Lo), vreinterpretq_u8_s64(Hi), 14))
 #define SIGMA(a)      \
-  vreinterpretq_s64_s8(vqtbl1q_s8(vreinterpretq_s8_s64(a),\
-  vandq_u8(vreinterpretq_u8_s64(vcombine_s64(vcreate_s64(0x0d0905010c080400ULL),\
-  vcreate_s64(0x0f0b07030e0a0602ULL))), vdupq_n_u8(0x8F))));
+  vreinterpretq_s64_s8(vqtbl1q_s8(vreinterpretq_s8_m128i(a), vandq_u8(vreinterpretq_u8_s64(vcombine_s64(vcreate_s64(0x0d0905010c080400ULL), vcreate_s64(0x0f0b07030e0a0602ULL))), vdupq_n_u8(0x8F))))
 #define AESR(a, k)    _mm_aesenc_si128(a, k)
+// --------------------------------------------------
 #define ZERO()        vdupq_n_s64(0)
-#define LOAD(src)     vld1q_s64((const int64_t *)(src))
-#define STORE(dst, x) vst1q_s64((int64_t *) (dst), x)
+#define LOAD(src)     \
+  vld1q_s64((const int64_t *)(src))
+#define STORE(dst, x) \
+  vst1q_s64((int64_t *)(dst), (x))
 #define u8            unsigned char
 
 #define SnowVi_XMM_ROUND(mode, offset)\
@@ -62,7 +55,7 @@ static inline void SnowVi_encdec(int length, u8 * out,
 int value = 1;
 
 #include <stdio.h>
-int main()
+int test()
 {
   unsigned char key[32] = {0};
   unsigned char iv[16] = {0};
@@ -79,13 +72,18 @@ int main()
     0x1c, 0x8a, 0xb2, 0x02, 0xee, 0x38, 0xe2, 0x85, 0x0c, 0xca, 0x60, 0x6a, 0xb8, 0x75, 0xcd, 0x12,
     0x41, 0x03, 0xb3, 0x2f, 0xa5, 0x14, 0x5d, 0xdf, 0x54, 0xe7, 0xa0, 0x7b, 0x0f, 0x3e, 0xb7, 0x7a
   };
-  bool ok = true;
+
   for (int i = 0; i < 128; ++i)
     if (out[i] != test[i])
     {
       printf("Error at %d: %02x != %02x\n", i, out[i], test[i]);
-      ok = false;
+      return 1;
     }
-  if (ok) printf("OK\n");
+  printf("OK\n");
   return 0;
+}
+
+int main()
+{
+  return test();
 }
