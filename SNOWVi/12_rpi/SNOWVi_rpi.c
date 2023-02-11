@@ -1,22 +1,22 @@
 #include "sse2neon.h"
 #define XOR(a, b)     veorq_s64(a, b)
 #define AND(a, b)     vandq_s64(a, b)
-#define ADD(a, b)     vreinterpretq_s64_s32(vaddq_s32(vreinterpretq_s32_s64(a), vreinterpretq_s32_s64(b)))
+#define ADD(a, b)     vreinterpretq_s64_s32(vaddq_s32(vreinterpretq_s32_s64(a), \
+                                                      vreinterpretq_s32_s64(b)))
 #define SET(v)        vreinterpretq_s64_s16(vdupq_n_s16((short)v))
-// Unable to transform without remove functionalities
-// --------------------------------------------------
-#define SLL(a)        vreinterpretq_s64_s16(vshlq_s16(vreinterpretq_s16_s64(a), vdupq_n_s16(1)))
-#define SRA(a)        vreinterpretq_s64_s16(vshlq_s16((int16x8_t) a, vdupq_n_s16(-15)))
-#define TAP7(Hi, Lo)  vreinterpretq_m128i_u8(vextq_u8(vreinterpretq_u8_s64(Lo), vreinterpretq_u8_s64(Hi), 14))
+#define SLL(a)        vreinterpretq_s64_s16(vshlq_n_s16(vreinterpretq_s16_s64(a), 1))
+#define SRA(a)        vreinterpretq_s64_s16(vshrq_n_s16(vreinterpretq_s16_s64(a), 15))
+#define TAP7(Hi, Lo)  vreinterpretq_s64_u8(vextq_u8(vreinterpretq_u8_s64(Lo), \
+                                                      vreinterpretq_u8_s64(Hi), 14))
 #define SIGMA(a)      \
-  vreinterpretq_s64_s8(vqtbl1q_s8(vreinterpretq_s8_m128i(a), vandq_u8(vreinterpretq_u8_s64(vcombine_s64(vcreate_s64(0x0d0905010c080400ULL), vcreate_s64(0x0f0b07030e0a0602ULL))), vdupq_n_u8(0x8F))))
+  vreinterpretq_s64_s8(vqtbl1q_s8(vreinterpretq_s8_s64(a),                      \
+                                  vandq_u8(vreinterpretq_u8_s64(vcombine_s64(vcreate_s64(0x0d0905010c080400ULL), \
+                                                                             vcreate_s64(0x0f0b07030e0a0602ULL))), \
+                                           vdupq_n_u8(0x8F))))
 #define AESR(a, k)    _mm_aesenc_si128(a, k)
-// --------------------------------------------------
 #define ZERO()        vdupq_n_s64(0)
-#define LOAD(src)     \
-  vld1q_s64((const int64_t *)(src))
-#define STORE(dst, x) \
-  vst1q_s64((int64_t *)(dst), (x))
+#define LOAD(src)     vld1q_s64((const int64_t *)(src))
+#define STORE(dst, x) vst1q_s64((int64_t *)(dst), (x))
 #define u8            unsigned char
 
 #define SnowVi_XMM_ROUND(mode, offset)\
