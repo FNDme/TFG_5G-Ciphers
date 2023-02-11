@@ -1,108 +1,26 @@
 #include <arm_neon.h>
-#define XOR(a, b)     veorq_s64(a, b)
-#define AND(a, b)     vandq_s64(a, b)
-#define ADD(a, b)     vreinterpretq_s64_s32(vaddq_s32(vreinterpretq_s32_s64(a), \
-                                                      vreinterpretq_s32_s64(b)))
-#define SET(v)        vreinterpretq_s64_s16(vdupq_n_s16((short)v))
-#define SLL(a)        vreinterpretq_s64_s16(vshlq_n_s16(vreinterpretq_s16_s64(a), 1))
-#define SRA(a)        vreinterpretq_s64_s16(vshrq_n_s16(vreinterpretq_s16_s64(a), 15))
-#define TAP7(Hi, Lo)  vreinterpretq_s64_u8(vextq_u8(vreinterpretq_u8_s64(Lo), \
-                                                      vreinterpretq_u8_s64(Hi), 14))
-#define SIGMA(a)      \
-  vreinterpretq_s64_s8(vqtbl1q_s8(vreinterpretq_s8_s64(a),                      \
-                                  vandq_u8(vreinterpretq_u8_s64(                \
-                                              vcombine_s64(vcreate_s64(0x0d0905010c080400ULL), \
-                                                           vcreate_s64(0x0f0b07030e0a0602ULL))), \
+#define XOR(a, b) veorq_s64(a, b)
+#define AND(a, b) vandq_s64(a, b)
+#define ADD(a, b) vreinterpretq_s64_s32(vaddq_s32(vreinterpretq_s32_s64(a), \
+                                                  vreinterpretq_s32_s64(b)))
+#define SET(v) vreinterpretq_s64_s16(vdupq_n_s16((short)v))
+#define SLL(a) vreinterpretq_s64_s16(vshlq_n_s16(vreinterpretq_s16_s64(a), 1))
+#define SRA(a) vreinterpretq_s64_s16(vshrq_n_s16(vreinterpretq_s16_s64(a), 15))
+#define TAP7(Hi, Lo) vreinterpretq_s64_u8(vextq_u8(vreinterpretq_u8_s64(Lo), \
+                                                   vreinterpretq_u8_s64(Hi), 14))
+#define SIGMA(a)                                                                                  \
+  vreinterpretq_s64_s8(vqtbl1q_s8(vreinterpretq_s8_s64(a),                                        \
+                                  vandq_u8(vreinterpretq_u8_s64(                                  \
+                                               vcombine_s64(vcreate_s64(0x0d0905010c080400ULL),   \
+                                                            vcreate_s64(0x0f0b07030e0a0602ULL))), \
                                            vdupq_n_u8(0x8F))))
-#define AESR(a, k)    vreinterpretq_s64_u8(vaesmcq_u8(vaeseq_u8(vreinterpretq_u8_s64(a), (uint8x16_t){})) ^ vreinterpretq_u8_s64(k))
-// #define AESR(a, k)    aesenc(a, k)
-#define ZERO()        vdupq_n_s64(0)
-#define LOAD(src)     vld1q_s64((const int64_t *)(src))
+#define AESR(a, k) vreinterpretq_s64_u8(vaesmcq_u8(vaeseq_u8(vreinterpretq_u8_s64(a), \
+                                                             (uint8x16_t){})) ^       \
+                                        vreinterpretq_u8_s64(k))
+#define ZERO() vdupq_n_s64(0)
+#define LOAD(src) vld1q_s64((const int64_t *)(src))
 #define STORE(dst, x) vst1q_s64((int64_t *)(dst), (x))
-#define u8            unsigned char
-
-static inline uint8x16x4_t _sse2neon_vld1q_u8_x4(const uint8_t *p)
-{
-  uint8x16x4_t ret;
-  ret.val[0] = vld1q_u8(p + 0);
-  ret.val[1] = vld1q_u8(p + 16);
-  ret.val[2] = vld1q_u8(p + 32);
-  ret.val[3] = vld1q_u8(p + 48);
-  return ret;
-}
-
-static inline int64x2_t aesenc(int64x2_t a, int64x2_t k)
-{
-
-#define SSE2NEON_AES_SBOX(w)                                           \
-  {                                                                    \
-        w(0x63), w(0x7c), w(0x77), w(0x7b), w(0xf2), w(0x6b), w(0x6f), \
-        w(0xc5), w(0x30), w(0x01), w(0x67), w(0x2b), w(0xfe), w(0xd7), \
-        w(0xab), w(0x76), w(0xca), w(0x82), w(0xc9), w(0x7d), w(0xfa), \
-        w(0x59), w(0x47), w(0xf0), w(0xad), w(0xd4), w(0xa2), w(0xaf), \
-        w(0x9c), w(0xa4), w(0x72), w(0xc0), w(0xb7), w(0xfd), w(0x93), \
-        w(0x26), w(0x36), w(0x3f), w(0xf7), w(0xcc), w(0x34), w(0xa5), \
-        w(0xe5), w(0xf1), w(0x71), w(0xd8), w(0x31), w(0x15), w(0x04), \
-        w(0xc7), w(0x23), w(0xc3), w(0x18), w(0x96), w(0x05), w(0x9a), \
-        w(0x07), w(0x12), w(0x80), w(0xe2), w(0xeb), w(0x27), w(0xb2), \
-        w(0x75), w(0x09), w(0x83), w(0x2c), w(0x1a), w(0x1b), w(0x6e), \
-        w(0x5a), w(0xa0), w(0x52), w(0x3b), w(0xd6), w(0xb3), w(0x29), \
-        w(0xe3), w(0x2f), w(0x84), w(0x53), w(0xd1), w(0x00), w(0xed), \
-        w(0x20), w(0xfc), w(0xb1), w(0x5b), w(0x6a), w(0xcb), w(0xbe), \
-        w(0x39), w(0x4a), w(0x4c), w(0x58), w(0xcf), w(0xd0), w(0xef), \
-        w(0xaa), w(0xfb), w(0x43), w(0x4d), w(0x33), w(0x85), w(0x45), \
-        w(0xf9), w(0x02), w(0x7f), w(0x50), w(0x3c), w(0x9f), w(0xa8), \
-        w(0x51), w(0xa3), w(0x40), w(0x8f), w(0x92), w(0x9d), w(0x38), \
-        w(0xf5), w(0xbc), w(0xb6), w(0xda), w(0x21), w(0x10), w(0xff), \
-        w(0xf3), w(0xd2), w(0xcd), w(0x0c), w(0x13), w(0xec), w(0x5f), \
-        w(0x97), w(0x44), w(0x17), w(0xc4), w(0xa7), w(0x7e), w(0x3d), \
-        w(0x64), w(0x5d), w(0x19), w(0x73), w(0x60), w(0x81), w(0x4f), \
-        w(0xdc), w(0x22), w(0x2a), w(0x90), w(0x88), w(0x46), w(0xee), \
-        w(0xb8), w(0x14), w(0xde), w(0x5e), w(0x0b), w(0xdb), w(0xe0), \
-        w(0x32), w(0x3a), w(0x0a), w(0x49), w(0x06), w(0x24), w(0x5c), \
-        w(0xc2), w(0xd3), w(0xac), w(0x62), w(0x91), w(0x95), w(0xe4), \
-        w(0x79), w(0xe7), w(0xc8), w(0x37), w(0x6d), w(0x8d), w(0xd5), \
-        w(0x4e), w(0xa9), w(0x6c), w(0x56), w(0xf4), w(0xea), w(0x65), \
-        w(0x7a), w(0xae), w(0x08), w(0xba), w(0x78), w(0x25), w(0x2e), \
-        w(0x1c), w(0xa6), w(0xb4), w(0xc6), w(0xe8), w(0xdd), w(0x74), \
-        w(0x1f), w(0x4b), w(0xbd), w(0x8b), w(0x8a), w(0x70), w(0x3e), \
-        w(0xb5), w(0x66), w(0x48), w(0x03), w(0xf6), w(0x0e), w(0x61), \
-        w(0x35), w(0x57), w(0xb9), w(0x86), w(0xc1), w(0x1d), w(0x9e), \
-        w(0xe1), w(0xf8), w(0x98), w(0x11), w(0x69), w(0xd9), w(0x8e), \
-        w(0x94), w(0x9b), w(0x1e), w(0x87), w(0xe9), w(0xce), w(0x55), \
-        w(0x28), w(0xdf), w(0x8c), w(0xa1), w(0x89), w(0x0d), w(0xbf), \
-        w(0xe6), w(0x42), w(0x68), w(0x41), w(0x99), w(0x2d), w(0x0f), \
-        w(0xb0), w(0x54), w(0xbb), w(0x16)                             \
-  }
-
-  static const uint8_t _sse2neon_sbox[256] = SSE2NEON_AES_SBOX();
-
-  static const uint8_t shift_rows[] = {
-      0x0, 0x5, 0xa, 0xf, 0x4, 0x9, 0xe, 0x3,
-      0x8, 0xd, 0x2, 0x7, 0xc, 0x1, 0x6, 0xb
-  };
-  static const uint8_t ror32by8[] = {
-      0x1, 0x2, 0x3, 0x0, 0x5, 0x6, 0x7, 0x4,
-      0x9, 0xa, 0xb, 0x8, 0xd, 0xe, 0xf, 0xc
-  };
-
-  uint8x16_t v;
-  uint8x16_t w = vreinterpretq_u8_s64(a);
-
-  w = vqtbl1q_u8(w, vld1q_u8(shift_rows));
-
-  v = vqtbl4q_u8(_sse2neon_vld1q_u8_x4(_sse2neon_sbox), w);
-
-  v = vqtbx4q_u8(v, _sse2neon_vld1q_u8_x4(_sse2neon_sbox + 0x40), w - 0x40);
-  v = vqtbx4q_u8(v, _sse2neon_vld1q_u8_x4(_sse2neon_sbox + 0x80), w - 0x80);
-  v = vqtbx4q_u8(v, _sse2neon_vld1q_u8_x4(_sse2neon_sbox + 0xc0), w - 0xc0);
-
-  w = (v << 1) ^ (uint8x16_t)(((int8x16_t)v >> 7) & 0x1b);
-  w ^= (uint8x16_t)vrev32q_u16((uint16x8_t)v);
-  w ^= vqtbl1q_u8(v ^ w, vld1q_u8(ror32by8));
-
-  return vreinterpretq_s64_u8(w) ^ k;
-}
+#define u8 unsigned char
 
 #define SnowVi_XMM_ROUND(mode, offset)                    \
   T1 = B1;                                                \
