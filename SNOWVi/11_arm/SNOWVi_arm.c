@@ -14,7 +14,7 @@
                                               vcombine_s64(vcreate_s64(0x0d0905010c080400ULL), \
                                                            vcreate_s64(0x0f0b07030e0a0602ULL))), \
                                            vdupq_n_u8(0x8F))))
-#define AESR(a, k)    vreinterpretq_s64_u8(vaeseq_u8(vreinterpretq_u8_s64(a), vreinterpretq_u8_s64(k)))
+#define AESR(a, k)    vreinterpretq_s64_u8(vaesmcq_u8(vaeseq_u8(vreinterpretq_u8_s64(a), (uint8x16_t){})) ^ vreinterpretq_u8_s64(k))
 // #define AESR(a, k)    aesenc(a, k)
 #define ZERO()        vdupq_n_s64(0)
 #define LOAD(src)     vld1q_s64((const int64_t *)(src))
