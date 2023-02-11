@@ -1,2 +1,5 @@
 .vscode
 clear.sh
+*.out
+*.o
+main

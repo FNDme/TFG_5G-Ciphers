@@ -9,11 +9,11 @@ endif
 default: compile
 
 compile: SNOWV_x86.cc
-	$(CC) SNOWV_x86.cc $(CFLAGS) -o main
+	$(CC) SNOWV_x86.cc $(CFLAGS) -o snowv.out
 
 test: compile
-	./main
+	./snowv.out
 
 .PHONY: clean
 clean:
-	rm -rf *.o *.exe *.out main
+	rm -rf *.o *.exe *.out snowv.out

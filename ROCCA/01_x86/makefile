@@ -9,11 +9,11 @@ endif
 default: compile
 
 compile: ROCCA_x86.c
-	$(CC) ROCCA_x86.c $(CFLAGS) -o main
+	$(CC) ROCCA_x86.c $(CFLAGS) -o rocca.out
 
 test: compile
-	./main
+	./rocca.out
 
 .PHONY: clean
 clean:
-	rm -rf *.o *.exe *.out main
+	rm -rf *.o *.exe *.out rocca.out

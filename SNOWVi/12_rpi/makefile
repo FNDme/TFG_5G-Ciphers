@@ -4,16 +4,16 @@ CFLAGS=-Wall -march=native
 default: check_compiler compile
 
 compile: SNOWVi_rpi.c
-	$(CC) SNOWVi_rpi.c $(CFLAGS) -o main
+	$(CC) SNOWVi_rpi.c $(CFLAGS) -o snowvi.out
 
 check_compiler:
 	@which $(CC) > /dev/null || (echo "ERROR: $(CC) is not installed" && exit 1)
 
 check:
-	@$(CC) SNOWVi_rpi.c $(CFLAGS) -o main
-	@./main
-	@rm -rf *.o *.exe *.out main
+	@$(CC) SNOWVi_rpi.c $(CFLAGS) -o snowvi.out
+	@./snowvi.out
+	@rm -rf *.o *.exe *.out snowvi.out
 
 .PHONY: clean
 clean:
-	rm -rf *.o *.exe *.out main
+	rm -rf *.o *.exe *.out snowvi.out

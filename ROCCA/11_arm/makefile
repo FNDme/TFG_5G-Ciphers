@@ -10,12 +10,12 @@ endif
 default: compile
 
 compile: ROCCA_arm.c
-	$(CC) ROCCA_arm.c $(CFLAGS) -o main
+	$(CC) ROCCA_arm.c $(CFLAGS) -o rocca.out
 
 test: compile
-	./main
-	rm -rf *.o *.exe *.out main
+	./rocca.out
+	rm -rf *.o *.exe *.out rocca.out
 
 .PHONY: clean
 clean:
-	rm -rf *.o *.exe *.out main
+	rm -rf *.o *.exe *.out rocca.out
