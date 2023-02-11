@@ -10,8 +10,9 @@
                                                       vreinterpretq_u8_s64(Hi), 14))
 #define SIGMA(a)      \
   vreinterpretq_s64_s8(vqtbl1q_s8(vreinterpretq_s8_s64(a),                      \
-                                  vandq_u8(vreinterpretq_u8_s64(vcombine_s64(vcreate_s64(0x0d0905010c080400ULL), \
-                                                                             vcreate_s64(0x0f0b07030e0a0602ULL))), \
+                                  vandq_u8(vreinterpretq_u8_s64(                \
+                                              vcombine_s64(vcreate_s64(0x0d0905010c080400ULL), \
+                                                           vcreate_s64(0x0f0b07030e0a0602ULL))), \
                                            vdupq_n_u8(0x8F))))
 #define AESR(a, k)    vreinterpretq_s64_u8(vaeseq_u8(vreinterpretq_u8_s64(a), vreinterpretq_u8_s64(k)))
 // #define AESR(a, k)    aesenc(a, k)
