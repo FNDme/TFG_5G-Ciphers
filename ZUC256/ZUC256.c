@@ -283,23 +283,34 @@ int test()
 {
   u8 k[32];
   for (int i = 0; i < 32; i++)
-    k[i] = 0xff;
-  u8 iv[24];
+    k[i] = 0x00;
+  u8 iv[16];
   for (int i = 0; i < 16; i++)
-    iv[i] = 0xff;
-  for (int i = 16; i < 24; i++)
-    iv[i] = 0x3f;
+    iv[i] = 0x00;
   u32 keystream[20];
+  u32 expectedks[20] = {
+    0xe457e206, 0xcee79e16, 0x7da20fd0, 0x3bbb22cc, 0xa2ec34f0,
+    0xe4e12c0b, 0x0ad0fb23, 0x6051348a, 0xf9779552, 0x454c3dbb,
+    0x397d19b3, 0x28390332, 0x11b9ae54, 0x6094770b, 0x5016e134,
+    0x620ebf4a, 0x302c9be3, 0xb65db142, 0x2b564caa, 0x9caeca83
+  };
 
   Initialization(k, iv);
   GenerateKeystream(keystream, 20);
 
+  int ok = 0;
   for (int i = 0; i < 20; i++)
   {
     printf("%08x ", keystream[i]);
     if (i % 5 == 4)
       printf("\n");
+    if (keystream[i] != expectedks[i])
+      ok = 1;
   }
+  if (ok)
+    printf("Test failed");
+  else
+    printf("Test passed");
   return 0;
 }
 
