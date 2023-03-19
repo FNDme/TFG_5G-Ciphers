@@ -1,5 +1,5 @@
 CC=gcc 
-CFLAGS=-Wall -march=native+crypto
+CFLAGS=-Wall -march=native
 
 default: check_compiler compile
 
