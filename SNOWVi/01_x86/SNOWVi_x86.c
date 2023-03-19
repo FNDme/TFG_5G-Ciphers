@@ -50,6 +50,87 @@ static inline void SnowVi_encdec(int length, u8 * out,
   { SnowVi_XMM_ROUND(1, i); }
 }
 
+#define SnowVi_3ROUNDS \
+A2 = XOR(XOR(XOR(TAP7(A1, A0), B0), AND(SRA(A0),SET(0x4a6d))), SLL(A0)); \
+B2 = XOR(XOR(B1, AND(SRA(B0), SET(0xcc87))), XOR(A0, SLL(B0))); \
+A2 = XOR(A2, XOR(ADD(B1, R1), R2)); \
+B2 = ADD(R2, R3); \
+R3 = AESR(R2, A2); \
+R2 = AESR(R1, ZERO()); \
+R1 = SIGMA(B2); \
+A0 = XOR(XOR(XOR(TAP7(A2, A1), B1), AND(SRA(A1),SET(0x4a6d))), SLL(A1)); \
+B0 = XOR(XOR(B2, AND(SRA(B1), SET(0xcc87))), XOR(A1, SLL(B1))); \
+A0 = XOR(A0, XOR(ADD(B2, R1), R2)); \
+B0 = ADD(R2, R3); \
+R3 = AESR(R2, A0); \
+R2 = AESR(R1, ZERO()); \
+R1 = SIGMA(B0); \
+A1 = XOR(XOR(XOR(TAP7(A0, A2), B2), AND(SRA(A2),SET(0x4a6d))), SLL(A2)); \
+B1 = XOR(XOR(B0, AND(SRA(B2), SET(0xcc87))), XOR(A2, SLL(B2))); \
+A1 = XOR(A1, XOR(ADD(B0, R1), R2)); \
+B1 = ADD(R2, R3); \
+R3 = AESR(R2, A1); \
+R2 = AESR(R1, ZERO()); \
+R1 = SIGMA(B1); \
+
+// Objetivo: Reducir el numero de copias del estado haciendo uso de un pivoteo
+// de registros en lugar de hacer uso de variables temporales.
+static inline void SnowVi_improved(int length, u8 * out,
+  u8 * in, u8 * key, u8 * iv)
+{ __m128i A0, A1, A2, B0, B1, B2, R1, R2, R3, T1, T2;
+  B0 = R1 = R2 = ZERO();
+  A0 = LOAD(iv);
+  R3 = A1 = LOAD(key);
+  B1 = LOAD(key + 16);
+
+  // Initial rounds
+    // First 12 rounds
+  for (int i = 0; i < 3; ++i)
+  { SnowVi_3ROUNDS; }
+
+    // Last 4 rounds
+  // 1 round
+  A2 = XOR(XOR(XOR(TAP7(A1, A0), B0), AND(SRA(A0),SET(0x4a6d))), SLL(A0));
+  B2 = XOR(XOR(B1, AND(SRA(B0), SET(0xcc87))), XOR(A0, SLL(B0)));
+  A2 = XOR(A2, XOR(ADD(B1, R1), R2));
+  B2 = ADD(R2, R3);
+  R3 = AESR(R2, A2);
+  R2 = AESR(R1, ZERO());
+  R1 = SIGMA(B2);
+  // 2 round
+  A0 = XOR(XOR(XOR(TAP7(A2, A1), B1), AND(SRA(A1),SET(0x4a6d))), SLL(A1));
+  B0 = XOR(XOR(B2, AND(SRA(B1), SET(0xcc87))), XOR(A1, SLL(B1)));
+  A0 = XOR(A0, XOR(ADD(B2, R1), R2));
+  B0 = ADD(R2, R3);
+  R3 = AESR(R2, A0);
+  R2 = AESR(R1, ZERO());
+  R1 = SIGMA(B0);
+  // 3 round
+  A1 = XOR(XOR(XOR(TAP7(A0, A2), B2), AND(SRA(A2),SET(0x4a6d))), SLL(A2));
+  B1 = XOR(XOR(B0, AND(SRA(B2), SET(0xcc87))), XOR(A2, SLL(B2)));
+  A1 = XOR(A1, XOR(ADD(B0, R1), R2));
+  B1 = ADD(R2, R3);
+  R3 = AESR(R2, A1);
+  R2 = AESR(R1, ZERO());
+  R1 = SIGMA(B1);
+  R1 = XOR(R1, LOAD(key));
+  // 4 round
+  A2 = XOR(XOR(XOR(TAP7(A1, A0), B0), AND(SRA(A0),SET(0x4a6d))), SLL(A0));
+  B2 = XOR(XOR(B1, AND(SRA(B0), SET(0xcc87))), XOR(A0, SLL(B0)));
+  A2 = XOR(A2, XOR(ADD(B1, R1), R2));
+  B2 = ADD(R2, R3);
+  R3 = AESR(R2, A2);
+  R2 = AESR(R1, ZERO());
+  R1 = SIGMA(B2);
+  R1 = XOR(R1, LOAD(key + 16));
+
+  // Main loop
+  for (int i = 0; i <= length - 16; i += 16)
+  { SnowVi_XMM_ROUND(1, i); }
+}
+
+
+
 #include <stdio.h>
 int main()
 {
@@ -57,7 +138,7 @@ int main()
   unsigned char iv[16] = {0};
   unsigned char in[128] = { 0 };
   unsigned char out[128] = { 0 };
-  SnowVi_encdec(128, out, in, key, iv);
+  SnowVi_improved(128, out, in, key, iv);
   unsigned char test[128] = {
     0x50, 0x17, 0x19, 0xe1, 0x75, 0xe4, 0x9f, 0xb7, 0x41, 0xba, 0xbf, 0x6b, 0xa5, 0xde, 0x60, 0xfe,
     0xcd, 0xa8, 0xb3, 0x4d, 0x7e, 0xc4, 0xc6, 0x42, 0x97, 0x55, 0xc1, 0x9d, 0x2f, 0x67, 0x18, 0x71,

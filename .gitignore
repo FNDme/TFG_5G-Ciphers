@@ -3,3 +3,4 @@ clear.sh
 *.out
 *.o
 main
+*.exe
