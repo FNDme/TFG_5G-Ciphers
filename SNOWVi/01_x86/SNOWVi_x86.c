@@ -94,52 +94,6 @@ R2 = AESR(R1, ZERO()); \
 R1 = SIGMA(A0); \
 R1 = XOR(R1, LOAD(key + 16)); \
 
-// For encoding, we can not use the same macro as for initialization
-// because the windows are ended up in the wrong registers order.
-// For encoding we start changing A0 and B0 registers instead of A2 and B2.
-#define SnowVi_3ROUNDS_ENCDEC(offset) \
-A0 = XOR(XOR(XOR(TAP7(A2, A1), B1), AND(SRA(A1),SET(0x4a6d))), SLL(A1)); \
-B0 = XOR(XOR(B2, AND(SRA(B1), SET(0xcc87))), XOR(A1, SLL(B1))); \
-STORE(out + offset, XOR(ADD(B2, R1), XOR(LOAD(in + offset), R2))); \
-A1 = ADD(R2, R3); \
-R3 = AESR(R2, A0); \
-R2 = AESR(R1, ZERO()); \
-R1 = SIGMA(A1); \
-A1 = XOR(XOR(XOR(TAP7(A0, A2), B2), AND(SRA(A2),SET(0x4a6d))), SLL(A2)); \
-B1 = XOR(XOR(B0, AND(SRA(B2), SET(0xcc87))), XOR(A2, SLL(B2))); \
-STORE(out + offset + 16, XOR(ADD(B0, R1), XOR(LOAD(in + offset + 16), R2))); \
-A2 = ADD(R2, R3); \
-R3 = AESR(R2, A1); \
-R2 = AESR(R1, ZERO()); \
-R1 = SIGMA(A2); \
-A2 = XOR(XOR(XOR(TAP7(A1, A0), B0), AND(SRA(A0),SET(0x4a6d))), SLL(A0)); \
-B2 = XOR(XOR(B1, AND(SRA(B0), SET(0xcc87))), XOR(A0, SLL(B0))); \
-STORE(out + offset + 32, XOR(ADD(B1, R1), XOR(LOAD(in + offset + 32), R2))); \
-A0 = ADD(R2, R3); \
-R3 = AESR(R2, A2); \
-R2 = AESR(R1, ZERO()); \
-R1 = SIGMA(A0);
-
-
-#define SnowVi_2ROUNDS_ENCDEC(offset) \
-A0 = XOR(XOR(XOR(TAP7(A2, A1), B1), AND(SRA(A1),SET(0x4a6d))), SLL(A1)); \
-B0 = XOR(XOR(B2, AND(SRA(B1), SET(0xcc87))), XOR(A1, SLL(B1))); \
-STORE(out + offset, XOR(ADD(B2, R1), XOR(LOAD(in + offset), R2))); \
-A1 = ADD(R2, R3); \
-R3 = AESR(R2, A0); \
-R2 = AESR(R1, ZERO()); \
-R1 = SIGMA(A1); \
-A1 = XOR(XOR(XOR(TAP7(A0, A2), B2), AND(SRA(A2),SET(0x4a6d))), SLL(A2)); \
-B1 = XOR(XOR(B0, AND(SRA(B2), SET(0xcc87))), XOR(A2, SLL(B2))); \
-STORE(out + offset + 16, XOR(ADD(B0, R1), XOR(LOAD(in + offset + 16), R2)));
-
-#define SnowVi_1ROUND_ENCDEC(offset) \
-A0 = XOR(XOR(XOR(TAP7(A2, A1), B1), AND(SRA(A1),SET(0x4a6d))), SLL(A1)); \
-B0 = XOR(XOR(B2, AND(SRA(B1), SET(0xcc87))), XOR(A1, SLL(B1))); \
-STORE(out + offset, XOR(ADD(B2, R1), XOR(LOAD(in + offset), R2)));
-
-
-
 static inline void SnowVi_encdec(int length, u8 * out,
   u8 * in, u8 * key, u8 * iv)
 { __m128i A0, A1, B0, B1, R1, R2, R3, T1, T2;
@@ -177,17 +131,47 @@ static inline void SnowVi_improved(int length, u8 * out,
   int i = 0;
   for (; i <= length - 48; i += 48)
   {
-    SnowVi_3ROUNDS_ENCDEC(i);
+    A0 = XOR(XOR(XOR(TAP7(A2, A1), B1), AND(SRA(A1),SET(0x4a6d))), SLL(A1));
+    B0 = XOR(XOR(B2, AND(SRA(B1), SET(0xcc87))), XOR(A1, SLL(B1)));
+    STORE(out + i, XOR(ADD(B2, R1), XOR(LOAD(in + i), R2)));
+    A1 = ADD(R2, R3);
+    R3 = AESR(R2, A0);
+    R2 = AESR(R1, ZERO());
+    R1 = SIGMA(A1);
+    A1 = XOR(XOR(XOR(TAP7(A0, A2), B2), AND(SRA(A2),SET(0x4a6d))), SLL(A2));
+    B1 = XOR(XOR(B0, AND(SRA(B2), SET(0xcc87))), XOR(A2, SLL(B2)));
+    STORE(out + i + 16, XOR(ADD(B0, R1), XOR(LOAD(in + i + 16), R2)));
+    A2 = ADD(R2, R3);
+    R3 = AESR(R2, A1);
+    R2 = AESR(R1, ZERO());
+    R1 = SIGMA(A2);
+    A2 = XOR(XOR(XOR(TAP7(A1, A0), B0), AND(SRA(A0),SET(0x4a6d))), SLL(A0));
+    B2 = XOR(XOR(B1, AND(SRA(B0), SET(0xcc87))), XOR(A0, SLL(B0)));
+    STORE(out + i + 32, XOR(ADD(B1, R1), XOR(LOAD(in + i + 32), R2)));
+    A0 = ADD(R2, R3);
+    R3 = AESR(R2, A2);
+    R2 = AESR(R1, ZERO());
+    R1 = SIGMA(A0);
   }
   if (i <= length - 32)
   {
-    SnowVi_2ROUNDS_ENCDEC(i);
+    A0 = XOR(XOR(XOR(TAP7(A2, A1), B1), AND(SRA(A1),SET(0x4a6d))), SLL(A1));
+    B0 = XOR(XOR(B2, AND(SRA(B1), SET(0xcc87))), XOR(A1, SLL(B1)));
+    STORE(out + i, XOR(ADD(B2, R1), XOR(LOAD(in + i), R2)));
+    A1 = ADD(R2, R3);
+    R3 = AESR(R2, A0);
+    R2 = AESR(R1, ZERO());
+    R1 = SIGMA(A1);
+    A1 = XOR(XOR(XOR(TAP7(A0, A2), B2), AND(SRA(A2),SET(0x4a6d))), SLL(A2));
+    B1 = XOR(XOR(B0, AND(SRA(B2), SET(0xcc87))), XOR(A2, SLL(B2)));
+    STORE(out + i + 16, XOR(ADD(B0, R1), XOR(LOAD(in + i + 16), R2)));
     return;
   }
   if (i <= length - 16)
   {
-    SnowVi_1ROUND_ENCDEC(i);
-    return;
+    A0 = XOR(XOR(XOR(TAP7(A2, A1), B1), AND(SRA(A1),SET(0x4a6d))), SLL(A1));
+    B0 = XOR(XOR(B2, AND(SRA(B1), SET(0xcc87))), XOR(A1, SLL(B1)));
+    STORE(out + i, XOR(ADD(B2, R1), XOR(LOAD(in + i), R2)));
   }
 }
 
