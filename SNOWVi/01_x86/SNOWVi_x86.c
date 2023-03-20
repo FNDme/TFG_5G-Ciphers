@@ -17,7 +17,7 @@
   _mm_storeu_si128((__m128i*)(dst), x)
 #define u8            unsigned char
 
-#define SIZE 32768 * 4
+#define SIZE 1024 * 1024
 
 
 #define SnowVi_XMM_ROUND(mode, offset)\
@@ -222,17 +222,23 @@ int main()
   // Original
   time_original = clock();
   for (int i = 0; i < 1000; ++i)
-  { SnowVi_encdec(SIZE, out, in, key, iv); }
+  {
+    SnowVi_encdec(SIZE, out, in, key, iv);
+  }
   time_original = clock() - time_original;
 
   // Improved
   time_improve = clock();
   for (int i = 0; i < 1000; ++i)
-  { SnowVi_improved(SIZE, out, in, key, iv); }
+  {
+    SnowVi_improved(SIZE, out2, in, key, iv);
+  }
   time_improve = clock() - time_improve;
 
   printf("Original: %f\n", (double)time_original);
   printf("Improved: %f\n", (double)time_improve);
+
+  printf("Speedup: %f\n", (double)time_original / (double)time_improve);
 
   printf("OK\n");
   return 0;
