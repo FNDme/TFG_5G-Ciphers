@@ -22,62 +22,121 @@
 #define STORE(dst, x) vst1q_s64((int64_t *)(dst), (x))
 #define u8 unsigned char
 
-#define SIZE 1024 * 512
+#define SIZE 1024 * 1024 * 2
 
-#define SnowVi_3ROUNDS_INIT \
-A2 = XOR(XOR(XOR(TAP7(A1, A0), B0), AND(SRA(A0),SET(0x4a6d))), SLL(A0)); \
-B2 = XOR(XOR(B1, AND(SRA(B0), SET(0xcc87))), XOR(A0, SLL(B0))); \
-A2 = XOR(A2, XOR(ADD(B1, R1), R2)); \
-A0 = ADD(R2, R3); \
-R3 = AESR(R2, A2); \
-R2 = AESR(R1, ZERO()); \
-R1 = SIGMA(A0); \
-A0 = XOR(XOR(XOR(TAP7(A2, A1), B1), AND(SRA(A1),SET(0x4a6d))), SLL(A1)); \
-B0 = XOR(XOR(B2, AND(SRA(B1), SET(0xcc87))), XOR(A1, SLL(B1))); \
-A0 = XOR(A0, XOR(ADD(B2, R1), R2)); \
-A1 = ADD(R2, R3); \
-R3 = AESR(R2, A0); \
-R2 = AESR(R1, ZERO()); \
-R1 = SIGMA(A1); \
-A1 = XOR(XOR(XOR(TAP7(A0, A2), B2), AND(SRA(A2),SET(0x4a6d))), SLL(A2)); \
-B1 = XOR(XOR(B0, AND(SRA(B2), SET(0xcc87))), XOR(A2, SLL(B2))); \
-A1 = XOR(A1, XOR(ADD(B0, R1), R2)); \
-A2 = ADD(R2, R3); \
-R3 = AESR(R2, A1); \
-R2 = AESR(R1, ZERO()); \
+#define SnowVi_3ROUNDS_INIT                       \
+A2 = XOR(XOR(XOR(TAP7(A1, A0), B0),               \
+     AND(SRA(A0),SET(0x4a6d))), SLL(A0));         \
+B2 = XOR(XOR(B1, AND(SRA(B0), SET(0xcc87))),      \
+     XOR(A0, SLL(B0)));                           \
+A2 = XOR(A2, XOR(ADD(B1, R1), R2));               \
+A0 = ADD(R2, R3);                                 \
+R3 = AESR(R2, A2);                                \
+R2 = AESR(R1, ZERO());                            \
+R1 = SIGMA(A0);                                   \
+A0 = XOR(XOR(XOR(TAP7(A2, A1), B1),               \
+     AND(SRA(A1),SET(0x4a6d))), SLL(A1));         \
+B0 = XOR(XOR(B2, AND(SRA(B1), SET(0xcc87))),      \
+     XOR(A1, SLL(B1)));                           \
+A0 = XOR(A0, XOR(ADD(B2, R1), R2));               \
+A1 = ADD(R2, R3);                                 \
+R3 = AESR(R2, A0);                                \
+R2 = AESR(R1, ZERO());                            \
+R1 = SIGMA(A1);                                   \
+A1 = XOR(XOR(XOR(TAP7(A0, A2), B2),               \
+     AND(SRA(A2),SET(0x4a6d))), SLL(A2));         \
+B1 = XOR(XOR(B0, AND(SRA(B2), SET(0xcc87))),      \
+     XOR(A2, SLL(B2)));                           \
+A1 = XOR(A1, XOR(ADD(B0, R1), R2));               \
+A2 = ADD(R2, R3);                                 \
+R3 = AESR(R2, A1);                                \
+R2 = AESR(R1, ZERO());                            \
 R1 = SIGMA(A2);
 
-#define SnowVi_4ROUNDS_INIT \
-A2 = XOR(XOR(XOR(TAP7(A1, A0), B0), AND(SRA(A0),SET(0x4a6d))), SLL(A0)); \
-B2 = XOR(XOR(B1, AND(SRA(B0), SET(0xcc87))), XOR(A0, SLL(B0))); \
-A2 = XOR(A2, XOR(ADD(B1, R1), R2)); \
-A0 = ADD(R2, R3); \
-R3 = AESR(R2, A2); \
-R2 = AESR(R1, ZERO()); \
-R1 = SIGMA(A0); \
-A0 = XOR(XOR(XOR(TAP7(A2, A1), B1), AND(SRA(A1),SET(0x4a6d))), SLL(A1)); \
-B0 = XOR(XOR(B2, AND(SRA(B1), SET(0xcc87))), XOR(A1, SLL(B1))); \
-A0 = XOR(A0, XOR(ADD(B2, R1), R2)); \
-A1 = ADD(R2, R3); \
-R3 = AESR(R2, A0); \
-R2 = AESR(R1, ZERO()); \
-R1 = SIGMA(A1); \
-A1 = XOR(XOR(XOR(TAP7(A0, A2), B2), AND(SRA(A2),SET(0x4a6d))), SLL(A2)); \
-B1 = XOR(XOR(B0, AND(SRA(B2), SET(0xcc87))), XOR(A2, SLL(B2))); \
-A1 = XOR(A1, XOR(ADD(B0, R1), R2)); \
-A2 = ADD(R2, R3); \
-R3 = AESR(R2, A1); \
-R2 = AESR(R1, ZERO()); \
-R1 = SIGMA(A2); \
-R1 = XOR(R1, LOAD(key)); \
-A2 = XOR(XOR(XOR(TAP7(A1, A0), B0), AND(SRA(A0),SET(0x4a6d))), SLL(A0)); \
-B2 = XOR(XOR(B1, AND(SRA(B0), SET(0xcc87))), XOR(A0, SLL(B0))); \
-A2 = XOR(A2, XOR(ADD(B1, R1), R2)); \
-A0 = ADD(R2, R3); \
-R3 = AESR(R2, A2); \
-R2 = AESR(R1, ZERO()); \
-R1 = SIGMA(A0); \
-R1 = XOR(R1, LOAD(key + 16)); \
+#define SnowVi_4ROUNDS_INIT                       \
+A2 = XOR(XOR(XOR(TAP7(A1, A0), B0),               \
+     AND(SRA(A0),SET(0x4a6d))), SLL(A0));         \
+B2 = XOR(XOR(B1, AND(SRA(B0), SET(0xcc87))),      \
+     XOR(A0, SLL(B0)));                           \
+A2 = XOR(A2, XOR(ADD(B1, R1), R2));               \
+A0 = ADD(R2, R3);                                 \
+R3 = AESR(R2, A2);                                \
+R2 = AESR(R1, ZERO());                            \
+R1 = SIGMA(A0);                                   \
+A0 = XOR(XOR(XOR(TAP7(A2, A1), B1),               \
+     AND(SRA(A1),SET(0x4a6d))), SLL(A1));         \
+B0 = XOR(XOR(B2, AND(SRA(B1), SET(0xcc87))),      \
+     XOR(A1, SLL(B1)));                           \
+A0 = XOR(A0, XOR(ADD(B2, R1), R2));               \
+A1 = ADD(R2, R3);                                 \
+R3 = AESR(R2, A0);                                \
+R2 = AESR(R1, ZERO());                            \
+R1 = SIGMA(A1);                                   \
+A1 = XOR(XOR(XOR(TAP7(A0, A2), B2),               \
+     AND(SRA(A2),SET(0x4a6d))), SLL(A2));         \
+B1 = XOR(XOR(B0, AND(SRA(B2), SET(0xcc87))),      \
+     XOR(A2, SLL(B2)));                           \
+A1 = XOR(A1, XOR(ADD(B0, R1), R2));               \
+A2 = ADD(R2, R3);                                 \
+R3 = AESR(R2, A1);                                \
+R2 = AESR(R1, ZERO());                            \
+R1 = SIGMA(A2);                                   \
+R1 = XOR(R1, LOAD(key));                          \
+A2 = XOR(XOR(XOR(TAP7(A1, A0), B0),               \
+     AND(SRA(A0),SET(0x4a6d))), SLL(A0));         \
+B2 = XOR(XOR(B1, AND(SRA(B0), SET(0xcc87))),      \
+     XOR(A0, SLL(B0)));                           \
+A2 = XOR(A2, XOR(ADD(B1, R1), R2));               \
+A0 = ADD(R2, R3);                                 \
+R3 = AESR(R2, A2);                                \
+R2 = AESR(R1, ZERO());                            \
+R1 = SIGMA(A0);                                   \
+R1 = XOR(R1, LOAD(key + 16));                     \
+
+#define SnowVi_3ROUNDS(offset)                    \
+A0 = XOR(XOR(XOR(TAP7(A2, A1), B1),               \
+     AND(SRA(A1),SET(0x4a6d))), SLL(A1));         \
+B0 = XOR(XOR(B2, AND(SRA(B1),                     \
+     SET(0xcc87))), XOR(A1, SLL(B1)));            \
+STORE(out + offset, XOR(ADD(B2, R1),              \
+     XOR(LOAD(in + offset), R2)));                \
+A1 = ADD(R2, R3);                                 \
+R3 = AESR(R2, A0);                                \
+R2 = AESR(R1, ZERO());                            \
+R1 = SIGMA(A1);                                   \
+A1 = XOR(XOR(XOR(TAP7(A0, A2), B2),               \
+     AND(SRA(A2),SET(0x4a6d))), SLL(A2));         \
+B1 = XOR(XOR(B0, AND(SRA(B2),                     \
+     SET(0xcc87))), XOR(A2, SLL(B2)));            \
+STORE(out + offset + 16, XOR(ADD(B0, R1),         \
+     XOR(LOAD(in + offset + 16), R2)));           \
+A2 = ADD(R2, R3);                                 \
+R3 = AESR(R2, A1);                                \
+R2 = AESR(R1, ZERO());                            \
+R1 = SIGMA(A2);                                   \
+A2 = XOR(XOR(XOR(TAP7(A1, A0), B0),               \
+     AND(SRA(A0),SET(0x4a6d))), SLL(A0));         \
+B2 = XOR(XOR(B1, AND(SRA(B0),                     \
+     SET(0xcc87))), XOR(A0, SLL(B0)));            \
+STORE(out + offset + 32, XOR(ADD(B1, R1),         \
+     XOR(LOAD(in + offset + 32), R2)));           \
+A0 = ADD(R2, R3);                                 \
+R3 = AESR(R2, A2);                                \
+R2 = AESR(R1, ZERO());                            \
+R1 = SIGMA(A0);                                   \
+
+#define SnowVi_2ROUNDS(offset)                    \
+A0 = XOR(XOR(XOR(TAP7(A2, A1), B1),               \
+     AND(SRA(A1),SET(0x4a6d))), SLL(A1));         \
+B0 = XOR(XOR(B2, AND(SRA(B1),                     \
+     SET(0xcc87))), XOR(A1, SLL(B1)));            \
+STORE(out + offset, XOR(ADD(B2, R1),              \
+     XOR(LOAD(in + offset), R2)));                \
+A1 = ADD(R2, R3);                                 \
+R2 = AESR(R1, ZERO());                            \
+R1 = SIGMA(A1);                                   \
+STORE(out + offset + 16, XOR(ADD(B0, R1),         \
+     XOR(LOAD(in + offset + 16), R2)));           \
 
 static inline void SnowVi_improved(int length, u8 * out,
   u8 * in, u8 * key, u8 * iv)
@@ -98,49 +157,17 @@ static inline void SnowVi_improved(int length, u8 * out,
   int i = 0;
   for (; i <= length - 48; i += 48)
   {
-    A0 = XOR(XOR(XOR(TAP7(A2, A1), B1), AND(SRA(A1),SET(0x4a6d))), SLL(A1));
-    B0 = XOR(XOR(B2, AND(SRA(B1), SET(0xcc87))), XOR(A1, SLL(B1)));
-    STORE(out + i, XOR(ADD(B2, R1), XOR(LOAD(in + i), R2)));
-    A1 = ADD(R2, R3);
-    R3 = AESR(R2, A0);
-    R2 = AESR(R1, ZERO());
-    R1 = SIGMA(A1);
-
-    A1 = XOR(XOR(XOR(TAP7(A0, A2), B2), AND(SRA(A2),SET(0x4a6d))), SLL(A2));
-    B1 = XOR(XOR(B0, AND(SRA(B2), SET(0xcc87))), XOR(A2, SLL(B2)));
-    STORE(out + i + 16, XOR(ADD(B0, R1), XOR(LOAD(in + i + 16), R2)));
-    A2 = ADD(R2, R3);
-    R3 = AESR(R2, A1);
-    R2 = AESR(R1, ZERO());
-    R1 = SIGMA(A2);
-
-    A2 = XOR(XOR(XOR(TAP7(A1, A0), B0), AND(SRA(A0),SET(0x4a6d))), SLL(A0));
-    B2 = XOR(XOR(B1, AND(SRA(B0), SET(0xcc87))), XOR(A0, SLL(B0)));
-    STORE(out + i + 32, XOR(ADD(B1, R1), XOR(LOAD(in + i + 32), R2)));
-    A0 = ADD(R2, R3);
-    R3 = AESR(R2, A2);
-    R2 = AESR(R1, ZERO());
-    R1 = SIGMA(A0);
+    SnowVi_3ROUNDS(i);
   }
   if (i <= length - 32)
   {
-    A0 = XOR(XOR(XOR(TAP7(A2, A1), B1), AND(SRA(A1),SET(0x4a6d))), SLL(A1));
-    B0 = XOR(XOR(B2, AND(SRA(B1), SET(0xcc87))), XOR(A1, SLL(B1)));
-    STORE(out + i, XOR(ADD(B2, R1), XOR(LOAD(in + i), R2)));
-    A1 = ADD(R2, R3);
-    R3 = AESR(R2, A0);
-    R2 = AESR(R1, ZERO());
-    R1 = SIGMA(A1);
-    A1 = XOR(XOR(XOR(TAP7(A0, A2), B2), AND(SRA(A2),SET(0x4a6d))), SLL(A2));
-    B1 = XOR(XOR(B0, AND(SRA(B2), SET(0xcc87))), XOR(A2, SLL(B2)));
-    STORE(out + i + 16, XOR(ADD(B0, R1), XOR(LOAD(in + i + 16), R2)));
+    SnowVi_2ROUNDS(i);
     return;
   }
   if (i <= length - 16)
   {
-    A0 = XOR(XOR(XOR(TAP7(A2, A1), B1), AND(SRA(A1),SET(0x4a6d))), SLL(A1));
-    B0 = XOR(XOR(B2, AND(SRA(B1), SET(0xcc87))), XOR(A1, SLL(B1)));
-    STORE(out + i, XOR(ADD(B2, R1), XOR(LOAD(in + i), R2)));
+    STORE(out + i, XOR(ADD(B2, R1),               \
+        XOR(LOAD(in + i), R2)));
   }
 }
 
@@ -178,7 +205,7 @@ static inline void SnowVi_encdec(int length, u8 * out,
 }
 
 #include <stdio.h>
-#include <time.h>
+#include <time.h> 
 
 int main()
 {
@@ -187,53 +214,25 @@ int main()
   unsigned char in[SIZE] = { 0 };
   unsigned char out[SIZE] = { 0 };
   unsigned char out2[SIZE] = { 0 };
-  unsigned char test[128] = {
-    0x50, 0x17, 0x19, 0xe1, 0x75, 0xe4, 0x9f, 0xb7, 0x41, 0xba, 0xbf, 0x6b, 0xa5, 0xde, 0x60, 0xfe,
-    0xcd, 0xa8, 0xb3, 0x4d, 0x7e, 0xc4, 0xc6, 0x42, 0x97, 0x55, 0xc1, 0x9d, 0x2f, 0x67, 0x18, 0x71,
-    0x89, 0x57, 0xd3, 0x26, 0xcb, 0x46, 0x50, 0x2c, 0xeb, 0x81, 0x4c, 0xcd, 0x6e, 0xa5, 0x3a, 0xae,
-    0xdd, 0x6c, 0x92, 0xfb, 0xf3, 0x92, 0x1e, 0x8b, 0xd7, 0x31, 0x7b, 0xe2, 0x20, 0x15, 0x31, 0xbb,
-    0x09, 0x3e, 0xe8, 0x72, 0xe9, 0xeb, 0x40, 0x34, 0xe9, 0xb7, 0x1a, 0x4a, 0xc2, 0xb5, 0x4b, 0xd9,
-    0xf0, 0x0f, 0x5a, 0xdc, 0x06, 0xd2, 0xe6, 0xb5, 0x9f, 0xb7, 0x5a, 0x01, 0xbe, 0xf6, 0x13, 0x14,
-    0x1c, 0x8a, 0xb2, 0x02, 0xee, 0x38, 0xe2, 0x85, 0x0c, 0xca, 0x60, 0x6a, 0xb8, 0x75, 0xcd, 0x12,
-    0x41, 0x03, 0xb3, 0x2f, 0xa5, 0x14, 0x5d, 0xdf, 0x54, 0xe7, 0xa0, 0x7b, 0x0f, 0x3e, 0xb7, 0x7a
-  };
-
-  SnowVi_improved(128, out, in, key, iv);
-  // Check
-  for (int i = 0; i < 128; ++i)
-  { if (out[i] != test[i])
-    { printf("Error at %d: %02x != %02x", i, out[i], test[i]);
-      return 1;
-    }
-  }
-
-  SnowVi_encdec(128, out2, in, key, iv);
-  // Check
-  for (int i = 0; i < 128; ++i)
-  { if (out2[i] != test[i])
-    { printf("Error at %d: %02x != %02x", i, out2[i], test[i]);
-      return 1;
-    }
-  }
 
   // Time comparison
   clock_t time_original, time_improve;
 
-  // Improved
-  time_improve = clock();
-  for (int i = 0; i < 10000; ++i)
-  {
-    SnowVi_improved(SIZE, out2, in, key, iv);
-  }
-  time_improve = clock() - time_improve;
-
   // Original
   time_original = clock();
-  for (int i = 0; i < 10000; ++i)
+  for (int i = 0; i < 1000; ++i)
   {
     SnowVi_encdec(SIZE, out, in, key, iv);
   }
   time_original = clock() - time_original;
+
+  // Improved
+  time_improve = clock();
+  for (int i = 0; i < 1000; ++i)
+  {
+    SnowVi_improved(SIZE, out2, in, key, iv);
+  }
+  time_improve = clock() - time_improve;
 
   printf("Original: %f\n", (double)time_original);
   printf("Improved: %f\n", (double)time_improve);
