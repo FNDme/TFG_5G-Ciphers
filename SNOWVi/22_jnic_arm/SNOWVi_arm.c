@@ -237,8 +237,6 @@ int main()
   printf("Original: %f\n", (double)time_original);
   printf("Improved: %f\n", (double)time_improve);
 
-  printf("Speedup: %f\n", (double)time_original / (double)time_improve);
-
-  printf("OK\n");
+  printf("Speedup: %f%%\n", (((double)time_original / (double)time_improve) - 1.0) * 100.0);
   return 0;
 }
