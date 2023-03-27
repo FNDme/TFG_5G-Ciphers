@@ -216,25 +216,35 @@ int main()
   unsigned char out[SIZE] = { 0 };
   unsigned char out2[SIZE] = { 0 };
 
+  printf("              SnowVi tests\n");
+  printf("========================================\n");
+
   // Time comparison
-  clock_t time_original, time_improve;
+  clock_t time_original, time_improved;
 
-  // Original
-  time_original = clock();
-  for (int i = 0; i < 10000; ++i)
+  // Vector de tamaños a probar
+  int sizes[] = { 64, 256, 1024, 4096, 16384, 65536, 262144, 524288 };
+
+  // Test de velocidad
+  for (int i = 0; i < 8; ++i)
   {
-    SnowVi_encdec(SIZE, out, in, key, iv);
-  }
-  time_original = clock() - time_original;
+    // Original
+    time_original = clock();
+    for (int j = 0; j < 1000000; ++j)
+    {
+      SnowVi_encdec(sizes[i], out, in, key, iv);
+    }
+    time_original = clock() - time_original;
 
-  // Improved
-  time_improve = clock();
-  for (int i = 0; i < 10000; ++i)
-  {
-    SnowVi_improved(SIZE, out2, in, key, iv);
-  }
-  time_improve = clock() - time_improve;
+    // Improved
+    time_improved = clock();
+    for (int j = 0; j < 1000000; ++j)
+    {
+      SnowVi_improved(sizes[i], out2, in, key, iv);
+    }
+    time_improved = clock() - time_improved;
 
-  printf("Speedup: %f %%\n", (((double)time_original / (double)time_improve) - 1.0) * 100.0);
+    printf("Size: %*d,           Speedup: %.2f %%\n", 6, sizes[i], (((double)time_original / (double)time_improved) - 1.0) * 100.0);
+  }
   return 0;
 }

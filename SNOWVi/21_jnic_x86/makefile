@@ -16,4 +16,4 @@ check_compiler:
 
 .PHONY: clean
 clean:
-	rm -rf *.o *.exe *.out snowvi.exe
+	rm -rf *.o *.exe *.out snowvi
