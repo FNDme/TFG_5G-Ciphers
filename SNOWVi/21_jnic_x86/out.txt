@@ -1,0 +1,63 @@
+              SnowVi tests
+========================================
+Size:     64,           Speedup: 5.13 %
+Size:    256,           Speedup: 8.33 %
+Size:   1024,           Speedup: 16.89 %
+Size:   4096,           Speedup: 20.53 %
+Size:  16384,           Speedup: 19.67 %
+Size:  65536,           Speedup: 16.84 %
+Size: 262144,           Speedup: 16.63 %
+              SnowVi tests
+========================================
+Size:     64,           Speedup: 7.14 %
+Size:    256,           Speedup: 11.11 %
+Size:   1024,           Speedup: 12.82 %
+Size:   4096,           Speedup: 21.48 %
+Size:  16384,           Speedup: 20.17 %
+Size:  65536,           Speedup: 16.38 %
+Size: 262144,           Speedup: 39.13 %
+              SnowVi tests
+========================================
+Size:     64,           Speedup: 13.95 %
+Size:    256,           Speedup: 10.45 %
+Size:   1024,           Speedup: 20.89 %
+Size:   4096,           Speedup: 19.32 %
+Size:  16384,           Speedup: 20.18 %
+Size:  65536,           Speedup: 16.94 %
+Size: 262144,           Speedup: 16.59 %
+              SnowVi tests
+========================================
+Size:     64,           Speedup: 6.98 %
+Size:    256,           Speedup: 12.31 %
+Size:   1024,           Speedup: 19.35 %
+Size:   4096,           Speedup: 18.25 %
+Size:  16384,           Speedup: 19.98 %
+Size:  65536,           Speedup: 17.31 %
+Size: 262144,           Speedup: 19.46 %
+              SnowVi tests
+========================================
+Size:     64,           Speedup: 4.65 %
+Size:    256,           Speedup: 11.94 %
+Size:   1024,           Speedup: 20.37 %
+Size:   4096,           Speedup: 18.12 %
+Size:  16384,           Speedup: 22.41 %
+Size:  65536,           Speedup: 12.30 %
+Size: 262144,           Speedup: 18.34 %
+              SnowVi tests
+========================================
+Size:     64,           Speedup: 2.27 %
+Size:    256,           Speedup: 5.71 %
+Size:   1024,           Speedup: 18.50 %
+Size:   4096,           Speedup: 12.04 %
+Size:  16384,           Speedup: 20.53 %
+Size:  65536,           Speedup: 16.10 %
+Size: 262144,           Speedup: 17.09 %
+              SnowVi tests
+========================================
+Size:     64,           Speedup: 7.50 %
+Size:    256,           Speedup: 9.38 %
+Size:   1024,           Speedup: 19.35 %
+Size:   4096,           Speedup: 7.23 %
+Size:  16384,           Speedup: 17.36 %
+Size:  65536,           Speedup: 40.40 %
+Size: 262144,           Speedup: 18.26 %

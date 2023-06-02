@@ -208,7 +208,7 @@ static inline void SnowVi_encdec(int length, u8 * out,
 // Time testings
 #include <time.h>
 
-int main()
+int main(int argc, char *argv[])
 {
   unsigned char key[32] = {0};
   unsigned char iv[16] = {0};
@@ -223,14 +223,20 @@ int main()
   clock_t time_original, time_improved;
 
   // Vector de tamaños a probar
-  int sizes[] = { 64, 256, 1024, 4096, 16384, 65536, 262144, 524288 };
+  int sizes[] = { 64, 256, 1024, 4096, 16384, 65536, 262144 };
+
+  int repetitions = 1000000;
+  if (argc > 1)
+  {
+    repetitions = atoi(argv[1]);
+  }
 
   // Test de velocidad
-  for (int i = 0; i < 8; ++i)
+  for (int i = 0; i < 7; ++i)
   {
     // Original
     time_original = clock();
-    for (int j = 0; j < 1000000; ++j)
+    for (int j = 0; j < repetitions; ++j)
     {
       SnowVi_encdec(sizes[i], out, in, key, iv);
     }
@@ -238,7 +244,7 @@ int main()
 
     // Improved
     time_improved = clock();
-    for (int j = 0; j < 1000000; ++j)
+    for (int j = 0; j < repetitions; ++j)
     {
       SnowVi_improved(sizes[i], out2, in, key, iv);
     }

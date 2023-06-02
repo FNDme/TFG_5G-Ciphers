@@ -74,11 +74,10 @@ int main()
   SnowVi_encdec(128, out, in, key, iv);
   // Check
   for (int i = 0; i < 128; ++i)
-  { if (out[i] != test[i])
+   if (out[i] != test[i])
     { printf("Error at %d: %02x != %02x", i, out[i], test[i]);
       return 1;
     }
-  }
 
   printf("OK\n");
   return 0;

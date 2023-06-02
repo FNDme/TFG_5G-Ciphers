@@ -1,4 +1,4 @@
-CC=gcc 
+CC=gcc
 CFLAGS=-Wall -march=native
 
 default: check_compiler compile
