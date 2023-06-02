@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS=-march=native -O2
+CFLAGS=-march=native
 ifeq ($(OS),Windows_NT)
 	DIFF = fc
 else
